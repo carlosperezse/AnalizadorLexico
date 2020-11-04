@@ -7,12 +7,15 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import compilador_simple.Token.Tipos;
 
 public class Principal extends javax.swing.JFrame {
     
@@ -90,6 +93,32 @@ public class Principal extends javax.swing.JFrame {
 
     }
     
+    private static ArrayList<Token> lex(String input) {
+        final ArrayList<Token> tokens = new ArrayList<Token>();
+        final StringTokenizer st = new StringTokenizer(input);
+
+        while(st.hasMoreTokens()) {
+            String palabra = st.nextToken();
+            boolean matched = false;
+
+            for (Tipos tokenTipo : Tipos.values()) {
+                Pattern patron = Pattern.compile(tokenTipo.patron, Pattern.MULTILINE);
+                Matcher matcher = patron.matcher(palabra);
+                if(matcher.find()) {
+                    Token tk = new Token();
+                    tk.setTipo(tokenTipo);
+                    tk.setValor(palabra);
+                    tokens.add(tk);
+                    matched = true;
+                }
+            }
+            if (!matched) {
+                throw new RuntimeException("Se encontró un token invalido.");
+            }
+        }
+       return tokens;
+    }
+    
     
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
@@ -105,6 +134,7 @@ public class Principal extends javax.swing.JFrame {
         texta_ArchivoCargado = new javax.swing.JTextArea();
         jScrollPane2 = new javax.swing.JScrollPane();
         txta_ResultadoConsola = new javax.swing.JTextArea();
+        btn_Validartoken = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         getContentPane().setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
@@ -140,6 +170,13 @@ public class Principal extends javax.swing.JFrame {
         txta_ResultadoConsola.setRows(5);
         jScrollPane2.setViewportView(txta_ResultadoConsola);
 
+        btn_Validartoken.setText("Validar token");
+        btn_Validartoken.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btn_ValidartokenActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout Panel_PRINCIPALLayout = new javax.swing.GroupLayout(Panel_PRINCIPAL);
         Panel_PRINCIPAL.setLayout(Panel_PRINCIPALLayout);
         Panel_PRINCIPALLayout.setHorizontalGroup(
@@ -148,19 +185,20 @@ public class Principal extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(Panel_PRINCIPALLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jScrollPane1)
+                    .addComponent(jScrollPane2)
                     .addGroup(Panel_PRINCIPALLayout.createSequentialGroup()
                         .addGroup(Panel_PRINCIPALLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(text_Cargar)
                             .addComponent(text_ExpresionRegular, javax.swing.GroupLayout.DEFAULT_SIZE, 382, Short.MAX_VALUE))
                         .addGap(18, 18, 18)
-                        .addGroup(Panel_PRINCIPALLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                        .addGroup(Panel_PRINCIPALLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(btn_Validartoken, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addGroup(Panel_PRINCIPALLayout.createSequentialGroup()
                                 .addComponent(btn_Archivo)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(btn_Guardar))
-                            .addComponent(btn_Validar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addGap(0, 0, Short.MAX_VALUE))
-                    .addComponent(jScrollPane2))
+                                .addComponent(btn_Guardar)
+                                .addGap(0, 0, Short.MAX_VALUE))
+                            .addComponent(btn_Validar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
                 .addContainerGap())
         );
         Panel_PRINCIPALLayout.setVerticalGroup(
@@ -175,9 +213,11 @@ public class Principal extends javax.swing.JFrame {
                 .addGroup(Panel_PRINCIPALLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(text_ExpresionRegular, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(btn_Validar))
+                .addGap(4, 4, 4)
+                .addComponent(btn_Validartoken)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 240, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 252, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(26, 26, 26)
                 .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 148, Short.MAX_VALUE)
                 .addContainerGap())
         );
@@ -220,6 +260,16 @@ public class Principal extends javax.swing.JFrame {
         guardarComo(resultado);
     }//GEN-LAST:event_btn_GuardarActionPerformed
 
+    private void btn_ValidartokenActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_ValidartokenActionPerformed
+        String input = texta_ArchivoCargado.getText();
+        ArrayList<Token> tokens = lex(input);
+        String resultado = "";
+        for (Token token : tokens) {
+            resultado += "(" + token.getTipo() + ": " + token.getValor() +")\n";
+        }
+        txta_ResultadoConsola.setText(resultado);
+    }//GEN-LAST:event_btn_ValidartokenActionPerformed
+
     
     public static void main(String args[]) {
         /* Set the Nimbus look and feel */
@@ -258,6 +308,7 @@ public class Principal extends javax.swing.JFrame {
     private javax.swing.JButton btn_Archivo;
     private javax.swing.JButton btn_Guardar;
     private javax.swing.JButton btn_Validar;
+    private javax.swing.JButton btn_Validartoken;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTextField text_Cargar;
